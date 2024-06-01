@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cassandra Complexity</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: rgba(20, 20, 20, 0.9);
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white; /* Ensures default text color is white across the body */
+        }
+        #overlay {
+            position: absolute;
+            top: 50%; /* Center vertically */
+            left: 50%; /* Center horizontally */
+            transform: translate(-50%, -50%);
+            font-size: 36px; /* Larger font size for visibility */
+            color: white; /* Explicitly set the color to white */
+            font-weight: 300;
+            text-align: center;
+            z-index: 1000; /* Ensures it is on top of the canvas */
+        }
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="overlay">Cassandra Complexity</div>
+<script>
+    class Node {
+        constructor() {
+            this.vec = createVector(random(-width / 2, width / 2), random(-height / 2, height / 2), random(-200, 200));
+            this.size = random(5, 20); // Initial size of node
+        }
+
+        display() {
+            push();
+            translate(this.vec.x, this.vec.y, this.vec.z);
+            stroke(255);
+            strokeWeight(this.size * 0.1); // Scale stroke weight by size
+            point(0, 0);
+            pop();
+        }
+
+        grow() {
+            this.size += random(-2, 2); // Change size dynamically within limits
+            this.size = constrain(this.size, 5, 20); // Constrain size to avoid overgrowth
+        }
+    }
+
+    let nodes = [];
+    let maxNodes = 200;
+    let connectDistance = 150;
+
+    function setup() {
+        createCanvas(windowWidth, windowHeight, WEBGL);
+        frameRate(30);
+        for (let i = 0; i < 100; i++) {
+            nodes.push(new Node());
+        }
+    }
+
+    function draw() {
+        background(30, 30, 30, 230);
+        rotateY(frameCount * 0.005);
+        rotateX(frameCount * 0.002);
+
+        // Add and remove nodes dynamically
+        if (frameCount % 120 === 0) {
+            if (nodes.length > maxNodes) {
+                nodes.splice(int(random(nodes.length)), 10); // Remove 10 nodes randomly
+            }
+            for (let i = 0; i < 10; i++) {
+                nodes.push(new Node()); // Add new nodes gradually
+            }
+        }
+
+        nodes.forEach(node => node.grow());
+
+        // Draw all nodes and connections
+        for (let i = 0; i < nodes.length; i++) {
+            nodes[i].display();
+            for (let j = i + 1; j < nodes.length; j++) {
+                if (p5.Vector.dist(nodes[i].vec, nodes[j].vec) < connectDistance) {
+                    stroke(255, 255, 255, 50);
+                    strokeWeight(1);
+                    line(nodes[i].vec.x, nodes[i].vec.y, nodes[i].vec.z, nodes[j].vec.x, nodes[j].vec.y, nodes[j].vec.z);
+                }
+            }
+        }
+    }
+
+    function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+    }
+</script>
+</body>
+</html>
